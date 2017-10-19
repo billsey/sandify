@@ -18,6 +18,7 @@ import {
   setLoops,
   setShape,
   setShapeSize,
+  setShapeOffset,
   setGrow,
   setSpin,
   toggleGrow,
@@ -46,6 +47,7 @@ const shapeListProps = (state, ownProps) => {
     shapes: state.shapes,
     currentShape: state.currentShape,
     startingSize: state.startingSize,
+    offset: state.shapeOffset,
   }
 }
 
@@ -60,6 +62,9 @@ const shapeListDispatch = (dispatch, ownProps) => {
     onSizeChange: (event) => {
       dispatch(setShapeSize(event.target.value));
     },
+    onOffsetChange: (event) => {
+      dispatch(setShapeOffset(event.target.value));
+    },
   }
 }
 
@@ -67,39 +72,56 @@ class ShapeList extends Component {
   constructor(props) {
     super(props)
 
-    var star_points = []
-    for (var i=0; i<10; i++) {
-      var angle = Math.PI * 2.0 / 10.0 * i
-      var star_scale = 1.0
+    let star_points = []
+    for (let i=0; i<10; i++) {
+      let angle = Math.PI * 2.0 / 10.0 * i
+      let star_scale = 1.0
       if (i % 2 === 0) {
         star_scale *= 0.5
       }
       star_points.push(Vertex(star_scale * Math.cos(angle), star_scale * Math.sin(angle)))
     }
+    let circle_points = []
+    for (let i=0; i<128; i++) {
+      let angle = Math.PI * 2.0 / 128.0 * i
+      circle_points.push(Vertex(Math.cos(angle), Math.sin(angle)))
+    }
     this.props.addShape({
         name: "Square",
-        vertices: [
-          Vertex(-1,-1),
-          Vertex( 1,-1),
-          Vertex( 1, 1),
-          Vertex(-1, 1),
-        ],
+        vertices: (state) => {
+          return [
+            Vertex(-1,-1),
+            Vertex( 1,-1),
+            Vertex( 1, 1),
+            Vertex(-1, 1),
+          ]},
       });
     this.props.addShape({
         name: "Triangle",
-        vertices: [
-          Vertex( 1, 0),
-          Vertex( -0.5, 0.867),
-          Vertex( -0.5, -0.867),
-        ],
+        vertices: (state) => {
+          return [
+            Vertex( 1, 0),
+            Vertex( -0.5, 0.867),
+            Vertex( -0.5, -0.867),
+          ]},
       });
     this.props.addShape({
         name: "Star",
-        vertices: star_points,
+        vertices: (state) => {
+          return star_points
+        },
+      });
+    this.props.addShape({
+        name: "Circle",
+        vertices: (state) => {
+          return circle_points
+        },
       });
     this.props.addShape({
         name: "Vicious1",
-        vertices: Vicious1Vertices(),
+        vertices: (state) => {
+          return Vicious1Vertices()
+        },
       });
 
   }
@@ -128,6 +150,14 @@ class ShapeList extends Component {
                 </Col>
                 <Col sm={8}>
                   <FormControl type="number" value={this.props.startingSize} onChange={this.props.onSizeChange}/>
+                </Col>
+              </FormGroup>
+              <FormGroup controlId="shape-offset">
+                <Col componentClass={ControlLabel} sm={4}>
+                  Offset
+                </Col>
+                <Col sm={8}>
+                  <FormControl type="number" value={this.props.offset} onChange={this.props.onOffsetChange}/>
                 </Col>
               </FormGroup>
             </Form>
@@ -181,7 +211,7 @@ class RotationTransform extends Component {
                   Spin Step
                 </Col>
                 <Col sm={8}>
-                  <FormControl type="number" value={this.props.value} onChange={this.props.onChange}/>
+                  <FormControl type="number" step="0.1" value={this.props.value} onChange={this.props.onChange}/>
                 </Col>
               </FormGroup>
             </Form>
